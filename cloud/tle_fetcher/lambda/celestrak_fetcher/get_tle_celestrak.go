@@ -1,13 +1,13 @@
 package celestrak_fetcher
 
 import (
-	"bytes"
 	"errors"
 	"io"
 	"net/http"
 	"strings"
 	"text/template"
 	"tle-fetcher/model"
+	"tle-fetcher/util"
 )
 
 const (
@@ -33,7 +33,7 @@ func FetchTLEForSatellites(satName []string) (map[string]*model.Tle, map[string]
 }
 
 func fetchTLEForSatellite(satName string) (*model.Tle, error) {
-	url, err := execTempl(templateCelestrak, struct {
+	url, err := util.ExecTempl(templateCelestrak, struct {
 		Name string
 	}{
 		Name: satName,
@@ -56,10 +56,4 @@ func fetchTLEForSatellite(satName string) (*model.Tle, error) {
 	return &model.Tle{
 		Lines: splitLines,
 	}, nil
-}
-
-func execTempl(t *template.Template, model interface{}) (string, error) {
-	buf := &bytes.Buffer{}
-	err := t.Execute(buf, model)
-	return buf.String(), err
 }

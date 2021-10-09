@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"tle-fetcher/celestrak_fetcher"
+	"tle-fetcher/datastore"
 )
 
 func FetchAndSaveTle() (string, error) {
@@ -12,5 +13,15 @@ func FetchAndSaveTle() (string, error) {
 	tles, _ := celestrak_fetcher.FetchTLEForSatellites(sats)
 	//TODO save those tles
 	fmt.Sprintf("%v", tles)
+
+	db, err := datastore.Connect()
+	if err != nil {
+		return "", err
+	}
+	err = datastore.InsertTle(db, tles)
+	if err != nil {
+		return "", err
+	}
+
 	return fmt.Sprintf("%v", tles), nil
 }

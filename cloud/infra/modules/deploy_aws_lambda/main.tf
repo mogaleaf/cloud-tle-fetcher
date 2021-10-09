@@ -28,11 +28,15 @@ resource "aws_lambda_function" "function_notification" {
   s3_key    = aws_s3_bucket_object.bucket_upload.key
 
   runtime = "go1.x"
-  handler = "tle-fetcher"
+  handler = var.lambda_handler
 
   source_code_hash = data.archive_file.zip_binary.output_base64sha256
 
   role = aws_iam_role.lambda_exec.arn
+
+  environment {
+    variables = var.environment_variables
+  }
 }
 
 resource "aws_iam_role" "lambda_exec" {

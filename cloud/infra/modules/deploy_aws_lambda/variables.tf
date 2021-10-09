@@ -17,3 +17,13 @@ variable "lambda_function_name" {
   description = "name of the lambda function"
   type        = string
 }
+
+variable "lambda_handler" {
+  description = "handler of the lambda"
+  type        = string
+}
+
+variable "environment_variables" {
+  description = "environment variables"
+  type        = map
+}
