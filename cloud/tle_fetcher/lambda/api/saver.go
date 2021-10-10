@@ -6,19 +6,21 @@ import (
 	"tle-fetcher/datastore"
 )
 
-func FetchAndSaveTle() (string, error) {
+func FetchAndSaveTle(db datastore.Datastore) (string, error) {
 	//TODO from db get sat names
 
-	sats := []string{"HIBER-3", "HIBER-4"}
+	sats, err := db.GetSatelliteNames()
+	if err != nil {
+		return "", err
+	}
+	if len(sats) == 0 {
+		return "", nil
+	}
 	tles, _ := celestrak_fetcher.FetchTLEForSatellites(sats)
 	//TODO save those tles
 	fmt.Sprintf("%v", tles)
 
-	db, err := datastore.Connect()
-	if err != nil {
-		return "", err
-	}
-	err = datastore.InsertTle(db, tles)
+	err = db.InsertTle(tles)
 	if err != nil {
 		return "", err
 	}

@@ -2,12 +2,21 @@ package datastore
 
 import (
 	"context"
-	"os"
 	"text/template"
+	"tle-fetcher/model"
 	"tle-fetcher/util"
 
 	"github.com/go-pg/pg/v10"
 )
+
+type datastore struct {
+	*pg.DB
+}
+
+type Datastore interface {
+	InsertTle(tles map[string]*model.Tle) error
+	GetSatelliteNames() ([]string, error)
+}
 
 const (
 	templatePostgresName = "postgres_template"
@@ -18,13 +27,7 @@ var (
 	templatePostgres = template.Must(template.New(templatePostgresName).Parse("postgres://{{ .User }}:{{ .Password }}@{{ .Host }}:{{ .Port }}/{{ .Db }}?sslmode=disable"))
 )
 
-func Connect() (*pg.DB, error) {
-	rdsHostname, _ := os.LookupEnv("RDS_HOSTNAME")
-	rdsPort, _ := os.LookupEnv("RDS_PORT")
-	rdsDatabase, _ := os.LookupEnv("RDS_SCHEMA")
-	rdsUser, _ := os.LookupEnv("RDS_USER")
-	rdsPassword, _ := os.LookupEnv("RDS_PASSWORD")
-
+func Connect(rdsHostname, rdsUser, rdsPassword, rdsPort, rdsDatabase string) (Datastore, error) {
 	dbUrl, err := util.ExecTempl(templatePostgres, struct {
 		User     string
 		Password string
@@ -49,9 +52,15 @@ func Connect() (*pg.DB, error) {
 	ctx := context.Background()
 
 	if err := db.Ping(ctx); err != nil {
-
 		return nil, err
 	}
 
-	return db, nil
+	d := datastore{
+		db,
+	}
+
+	if err := d.createSchema(); err != nil {
+		return nil, err
+	}
+	return &d, nil
 }

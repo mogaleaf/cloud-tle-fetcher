@@ -16,5 +16,5 @@ variable "db_password" {
 variable "datastore_schema" {
   description = "handler of the lambda"
   type        = string
-  default     = "datastore"
+  default     = "postgres"
 }
