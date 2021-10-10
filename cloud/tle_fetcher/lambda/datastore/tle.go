@@ -2,30 +2,33 @@ package datastore
 
 import (
 	"fmt"
-	"tle-fetcher/model"
+	"strings"
+	dbshared "tle_manager/shared/db"
+	dbModel "tle_manager/shared/db/model"
+	"tle_manager/tle_fetcher/lambda/model"
 
 	"github.com/go-pg/pg/v10"
 )
 
 func (db *datastore) InsertTle(tles map[string]*model.Tle) error {
-	var dbTles []*Tle
+	var dbTles []*dbModel.Tle
 	var names []string
 	for satName, _ := range tles {
 		names = append(names, satName)
 	}
-	var satellites []*Satellite
+	var satellites []*dbModel.Satellite
 	if err := db.Model(&satellites).
 		Where("satellite.name in (?)", pg.In(names)).
 		Select(); err != nil {
 		return fmt.Errorf("can't select satellites: %w", err)
 	}
-	mapSatByName := make(map[string]*Satellite)
+	mapSatByName := make(map[string]*dbModel.Satellite)
 	for _, sat := range satellites {
 		mapSatByName[*sat.Name] = sat
 	}
-
+	var eventTle []*model.Tle
 	for satName, tle := range tles {
-		lastDbTle := &Tle{}
+		lastDbTle := &dbModel.Tle{}
 		name := satName
 		satellite, ok := mapSatByName[name]
 		if !ok {
@@ -35,11 +38,12 @@ func (db *datastore) InsertTle(tles map[string]*model.Tle) error {
 		if err != nil && err != pg.ErrNoRows {
 			return fmt.Errorf("can't select last tle: %w", err)
 		}
-		if lastDbTle != nil {
+		if err != pg.ErrNoRows {
 			continue
 		}
+		eventTle = append(eventTle, tle)
 		u := uint32(tle.LineOne.ElementSetNumber)
-		dbTles = append(dbTles, &Tle{
+		dbTles = append(dbTles, &dbModel.Tle{
 			SatelliteId: satellite.Id,
 			Line1:       &tle.TitleLine.Satname,
 			Line2:       &tle.Lines[1],
@@ -55,5 +59,8 @@ func (db *datastore) InsertTle(tles map[string]*model.Tle) error {
 		}
 	}
 
+	for _, event := range eventTle {
+		dbshared.Notify(db.DB, "new_tle", fmt.Sprintf("%s", strings.Trim(event.TLE.TitleLine.Satname, " ")))
+	}
 	return nil
 }

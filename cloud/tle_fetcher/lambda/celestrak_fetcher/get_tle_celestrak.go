@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"text/template"
-	"tle-fetcher/model"
-	"tle-fetcher/util"
+	"tle_manager/shared/util"
+	"tle_manager/tle_fetcher/lambda/model"
 
 	"git.darknebu.la/Satellite/tle"
 )

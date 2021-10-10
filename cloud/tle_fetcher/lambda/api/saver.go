@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"tle-fetcher/celestrak_fetcher"
-	"tle-fetcher/datastore"
+	"tle_manager/tle_fetcher/lambda/celestrak_fetcher"
+	"tle_manager/tle_fetcher/lambda/datastore"
 )
 
 func FetchAndSaveTle(db datastore.Datastore) (string, error) {

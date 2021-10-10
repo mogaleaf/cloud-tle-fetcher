@@ -1,13 +1,17 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"tle_manager/tle_fetcher/lambda/api"
-	"tle_manager/tle_fetcher/lambda/datastore"
+	"tle_manager/tle_notification/lambda/api"
+	"tle_manager/tle_notification/lambda/datastore"
+	event2 "tle_manager/tle_notification/lambda/event"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )
+
+var addr = flag.String("addr", "localhost:8080", "http service address")
 
 func main() {
 	aws, _ := os.LookupEnv("AWS_LAMBDA")
@@ -19,6 +23,7 @@ func main() {
 		os.Setenv("RDS_USER", "...")
 		os.Setenv("RDS_PASSWORD", "...")
 		os.Setenv("RDS_SCHEMA", "datastore")
+		os.Setenv("WS_ADDR", "localhost:8080")
 		err := RunMain()
 		if err != nil {
 			println(fmt.Sprintf("%v", fmt.Errorf("problem: %w", err)))
@@ -39,14 +44,16 @@ func RunMain() error {
 	rdsDatabase, _ := os.LookupEnv("RDS_SCHEMA")
 	rdsUser, _ := os.LookupEnv("RDS_USER")
 	rdsPassword, _ := os.LookupEnv("RDS_PASSWORD")
-	db, err := datastore.NewDatastore(rdsHostname, rdsUser, rdsPassword, rdsPort, rdsDatabase)
+	addr, _ := os.LookupEnv("WS_ADDR")
+	event := event2.NewSatelliteTleObserver()
+	db, err := datastore.NewDatastore(rdsHostname, rdsUser, rdsPassword, rdsPort, rdsDatabase, event)
 	if err != nil {
 		return fmt.Errorf("can't connect datastore: %w", err)
 	}
 
-	tle, err := api.FetchAndSaveTle(db)
-	//TODO
-	println(tle)
+	print(db)
+	go db.ListenNewTle()
+	api.ServeClient(addr, event, db)
 
-	return err
+	return nil
 }
