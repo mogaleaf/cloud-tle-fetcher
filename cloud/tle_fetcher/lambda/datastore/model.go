@@ -21,6 +21,7 @@ type Tle struct {
 	Line1       *string    `pg:"line1"`
 	Line2       *string    `pg:"line2"`
 	Line3       *string    `pg:"line3"`
+	LastID      *uint32    `pg:"last_id"`
 }
 
 func (db *datastore) createSchema() error {

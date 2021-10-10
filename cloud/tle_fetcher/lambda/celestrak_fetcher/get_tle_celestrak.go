@@ -2,12 +2,15 @@ package celestrak_fetcher
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"text/template"
 	"tle-fetcher/model"
 	"tle-fetcher/util"
+
+	"git.darknebu.la/Satellite/tle"
 )
 
 const (
@@ -22,12 +25,12 @@ func FetchTLEForSatellites(satName []string) (map[string]*model.Tle, map[string]
 	tleBySat := make(map[string]*model.Tle, len(satName))
 	errors := make(map[string]error)
 	for _, sat := range satName {
-		satellite, err := fetchTLEForSatellite(sat)
+		tle, err := fetchTLEForSatellite(sat)
 		if err != nil {
 			errors[sat] = err
 			continue
 		}
-		tleBySat[sat] = satellite
+		tleBySat[sat] = tle
 	}
 	return tleBySat, errors
 }
@@ -53,7 +56,12 @@ func fetchTLEForSatellite(satName string) (*model.Tle, error) {
 	if len(splitLines) != 3 {
 		return nil, errors.New("TLE should be 3 lines")
 	}
+	newTLE, err := tle.NewTLE(string(lines))
+	if err != nil {
+		return nil, fmt.Errorf("can't read tle: %w", err)
+	}
 	return &model.Tle{
 		Lines: splitLines,
+		TLE:   &newTLE,
 	}, nil
 }
