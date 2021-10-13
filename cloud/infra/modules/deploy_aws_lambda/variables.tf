@@ -27,3 +27,7 @@ variable "environment_variables" {
   description = "environment variables"
   type        = map
 }
+variable "iam_arn" {
+  description = "iam arn variables"
+  type        = string
+}

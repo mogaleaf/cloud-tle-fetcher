@@ -1,8 +1,10 @@
 # satellite-leo-planning
 Plan your low orbit satellite 
 
-## tle_fetcher
-Fetch tle from celestrak to register the last value in the db.
+## tle_fetcher_solution
+Be notified when a new tle for your satellite is available.  
+Deploy the solution on aws.  
+Use the client to test the solution  
 
 ## deploying
 
@@ -20,3 +22,10 @@ To deploy
 ```
 ./deploy.sh
 ```
+
+## cloud
+
+- dynamodb
+- lambdas
+- api gateway
+- cloud watch
