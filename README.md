@@ -1,5 +1,5 @@
-# satellite-leo-planning
-Plan your low orbit satellite 
+# Cloud TLE fetcher solution
+Be notified when a new TLE has been issued
 
 ## tle_fetcher_solution
 Be notified when a new tle for your satellite is available.  
