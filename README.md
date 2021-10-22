@@ -6,6 +6,9 @@ Be notified when a new tle for your satellite is available.
 Deploy the solution on aws.  
 Use the client to test the solution  
 
+
+![image](schema.png)
+
 ## deploying
 
 This project is set to deploy the infra on aws with terraform.  
